@@ -1,0 +1,2 @@
+soniox
+python-dotenv

@@ -7,6 +7,7 @@
 *.aac
 *.m4a
 *.txt
+!requirements.txt
 __pycache__/
 *.pyc
 venv/
