@@ -172,16 +172,6 @@ ConceptSoniox/
 - Asegurar buena calidad de audio (sin ruido)
 - Comprobar formato de audio soportado
 
-## Mejoras Futuras
-
-- [ ] Soporte para múltiples idiomas (es_v2, en_v2)
-- [ ] Exportar transcripción (TXT, JSON, SRT)
-- [ ] Visualización de timestamps
-- [ ] Edición de transcripción
-- [ ] Guardar sesiones
-- [ ] Autenticación de usuarios
-- [ ] Migración a nueva API multilingüe
-
 ## Documentación Oficial
 
 - **API Legacy (esta implementación)**: https://soniox.com/docs/speech-to-text-legacy/api-frameworks/grpc
