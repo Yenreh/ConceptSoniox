@@ -1,0 +1,15 @@
+.env
+*.mp3
+*.wav
+*.ogg
+*.flac
+*.webm
+*.aac
+*.m4a
+*.txt
+__pycache__/
+*.pyc
+venv/
+.venv/
+sample_audio.*
+transcription.*
