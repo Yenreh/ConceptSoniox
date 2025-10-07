@@ -2,27 +2,27 @@
 
 Aplicación web completa para transcripción de audio a texto en español usando Soniox Speech-to-Text API (modelo `es_v2`).
 
-## 🚀 Características
+## Características
 
 ### Aplicación Web (Flask)
-- 🎤 **Grabación en vivo** desde el micrófono con transcripción en tiempo real
-- 📁 **Subir archivos** de audio con drag & drop
-- 🔄 **WebSockets** para comunicación en tiempo real
-- 📊 **Estadísticas** en vivo (palabras, caracteres, duración)
-- 🎨 **Interfaz moderna** y responsiva
+- Grabación en vivo desde el micrófono con transcripción en tiempo real
+- Subir archivos de audio con drag & drop
+- WebSockets para comunicación en tiempo real
+- Estadísticas en vivo (palabras, caracteres, duración)
+- Interfaz moderna y responsiva
 
 ### Script de Línea de Comandos
-- 🎯 **Transcripción de archivos** de audio
-- ⏱️ **Timestamps precisos** por palabra
-- 💾 **Exportación** a TXT
-- 🇪🇸 **Optimizado para español** (modelo es_v2)
+- Transcripción de archivos de audio
+- Timestamps precisos por palabra
+- Exportación a TXT
+- Optimizado para español (modelo es_v2)
 
-## 📋 Requisitos
+## Requisitos
 
 - Python 3.8 o superior
-- Cuenta en Soniox (https://console.soniox.com) - **Plan gratuito disponible**
+- Cuenta en Soniox (https://console.soniox.com) - Plan gratuito disponible
 
-## ⚙️ Instalación
+## Instalación
 
 ### 1. Configuración Inicial
 
@@ -51,14 +51,11 @@ SECRET_KEY=tu_secret_key_para_flask  # Para Flask
 ### 3. Instalar Dependencias
 
 ```bash
-# Para usar solo el script de línea de comandos
+# Instalar todas las dependencias (incluye Flask)
 pip install -r requirements.txt
-
-# Para usar la aplicación web Flask
-pip install -r requirements_flask.txt
 ```
 
-## 🎯 Uso
+## Uso
 
 ### Opción 1: Aplicación Web (Recomendado)
 
@@ -72,11 +69,11 @@ Abre tu navegador en **http://localhost:5000**
 #### Funcionalidades Web
 
 **Grabación en Vivo:**
-1. Clic en "🎙️ Iniciar Grabación"
+1. Clic en "Iniciar Grabación"
 2. Permitir acceso al micrófono
 3. Hablar en español
 4. Ver transcripción en tiempo real
-5. Clic en "⏹️ Detener" al terminar
+5. Clic en "Detener" al terminar
 
 **Subir Archivo:**
 1. Arrastra un archivo de audio al área de carga
@@ -92,7 +89,7 @@ python speech_to_text.py
 
 Coloca tu archivo de audio como `sample_audio.mp3` o modifica el script para usar otro archivo. El resultado se guardará en `transcription.txt`.
 
-## 🎵 Formatos de Audio Soportados
+## Formatos de Audio Soportados
 
 - MP3
 - WAV
@@ -104,7 +101,7 @@ Coloca tu archivo de audio como `sample_audio.mp3` o modifica el script para usa
 - ASF
 - AIFF
 
-## 🔧 Tecnologías
+## Tecnologías
 
 ### Backend
 - Flask + Flask-SocketIO
@@ -121,7 +118,7 @@ Coloca tu archivo de audio como `sample_audio.mp3` o modifica el script para usa
 - Soniox Speech-to-Text (modelo es_v2)
 - Protocolo gRPC
 
-## 🏗️ Arquitectura
+## Arquitectura
 
 ```
 ┌─────────────────┐
@@ -144,7 +141,7 @@ Coloca tu archivo de audio como `sample_audio.mp3` o modifica el script para usa
 └─────────────────┘
 ```
 
-## 📂 Estructura del Proyecto
+## Estructura del Proyecto
 
 ```
 ConceptSoniox/
@@ -152,14 +149,13 @@ ConceptSoniox/
 ├── speech_to_text.py         # Script CLI
 ├── templates/
 │   └── index.html           # Interfaz web
-├── requirements.txt         # Dependencias básicas
-├── requirements_flask.txt   # Dependencias web
+├── requirements.txt         # Dependencias
 ├── .env.example            # Template de configuración
 ├── .gitignore              # Archivos ignorados
 └── README.md               # Este archivo
 ```
 
-## 🐛 Troubleshooting
+## Troubleshooting
 
 ### No se puede acceder al micrófono
 - Permitir acceso al micrófono en el navegador
@@ -176,7 +172,7 @@ ConceptSoniox/
 - Asegurar buena calidad de audio (sin ruido)
 - Comprobar formato de audio soportado
 
-## 🚀 Mejoras Futuras
+## Mejoras Futuras
 
 - [ ] Soporte para múltiples idiomas (es_v2, en_v2)
 - [ ] Exportar transcripción (TXT, JSON, SRT)
@@ -186,14 +182,14 @@ ConceptSoniox/
 - [ ] Autenticación de usuarios
 - [ ] Migración a nueva API multilingüe
 
-## 📚 Documentación Oficial
+## Documentación Oficial
 
 - **API Legacy (esta implementación)**: https://soniox.com/docs/speech-to-text-legacy/api-frameworks/grpc
 - **Nueva API (60+ idiomas)**: https://soniox.com/docs/stt/get-started
 - **Ejemplos Python**: https://github.com/soniox/soniox_examples
 - **Discord**: https://discord.gg/rWfnk9uM5j
 
-## 📝 Notas
+## Notas
 
 - Esta implementación usa la **API Legacy** con modelo `es_v2` (español)
 - Para soporte multilingüe (60+ idiomas), considera migrar a la nueva API
@@ -201,13 +197,3 @@ ConceptSoniox/
 - El archivo `.env` está excluido por seguridad
 - Plan gratuito disponible para pruebas
 - Para producción, revisar límites en documentación oficial
-
-## 📄 Licencia
-
-Este es un proyecto de prueba de concepto para fines educativos.
-
-## 👤 Autor
-
-**Yenreh**
-- GitHub: [@Yenreh](https://github.com/Yenreh)
-- Repositorio: [ConceptSoniox](https://github.com/Yenreh/ConceptSoniox)
