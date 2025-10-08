@@ -4,10 +4,9 @@ Prueba de concepto que combina transcripción y síntesis de voz usando Soniox y
 
 ## Qué incluye
 
-- **Interfaz web**
+**Interfaz web**
   - Pestaña Soniox: transcripción en vivo desde el navegador, subida de archivos y métricas de palabras/caracteres.
   - Pestaña Deepgram: transcripción en vivo multilenguaje, carga de archivos locales, URLs remotas y texto a voz.
-- **Script CLI** (`speech_to_text.py`) para transcribir archivos con Soniox y guardar el resultado en `transcription.txt`.
 
 ## Requisitos rápidos
 
