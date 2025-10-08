@@ -1,16 +1,11 @@
 import base64
 import os
-import threading
 import tempfile
 from typing import Any, Dict, Optional
 from io import BytesIO
 
-import requests
 from deepgram import DeepgramClient
-from deepgram.core.events import EventType
-from deepgram.extensions.types.sockets import ListenV1SocketClientResponse
 from dotenv import load_dotenv
-from flask_socketio import SocketIO
 
 load_dotenv()
 
@@ -23,8 +18,6 @@ class DeepgramController:
         if not self._api_key:
             raise RuntimeError("DEEPGRAM_API_KEY not configured. Check your .env file.")
         self._client = DeepgramClient(api_key=self._api_key)
-        self._sessions: Dict[str, Dict[str, Any]] = {}
-        self._lock = threading.Lock()
 
     def transcribe_local_upload(self, file_storage, language: str = "es") -> Dict[str, Any]:
         """Transcribe uploaded audio file using Deepgram SDK."""
@@ -149,6 +142,42 @@ class DeepgramController:
             }
         }
 
+    def transcribe_microphone_chunk(
+        self,
+        audio_data: bytes,
+        audio_format: str = "wav",
+        language: str = "es"
+    ) -> Dict[str, Any]:
+        """Transcribe audio chunk from microphone using Deepgram SDK."""
+        if not audio_data:
+            raise ValueError("No audio data provided")
+        
+        # Use Deepgram SDK for transcription
+        response = self._client.listen.v1.media.transcribe_file(
+            request=audio_data,
+            model="nova-3",
+            smart_format=True,
+            punctuate=True,
+            language=language
+        )
+        
+        # Extract transcript from response
+        transcript = ""
+        confidence = 0.0
+        
+        if response.results and response.results.channels:
+            if response.results.channels[0].alternatives:
+                alt = response.results.channels[0].alternatives[0]
+                transcript = alt.transcript or ""
+                confidence = alt.confidence or 0.0
+        
+        return {
+            "text": transcript,
+            "confidence": confidence,
+            "format": audio_format,
+            "model": "nova-3"
+        }
+
     def synthesize_speech(
         self,
         *,
@@ -179,73 +208,6 @@ class DeepgramController:
         # Return base64 encoded audio
         audio_buffer.seek(0)
         return base64.b64encode(audio_buffer.read()).decode("utf-8")
-
-    def start_streaming(self, sid: str, url: str, socketio: SocketIO) -> None:
-        if not url:
-            raise ValueError("No URL provided")
-
-        stop_flag = threading.Event()
-
-        def ws_thread() -> None:
-            try:
-                with self._client.listen.v1.connect(model="nova-3") as connection:
-                    def on_open(_) -> None:
-                        print("Connection opened")
-
-                    def on_message(message: ListenV1SocketClientResponse) -> None:
-                        if hasattr(message, 'channel'):
-                            transcript = message.channel.alternatives[0].transcript if message.channel.alternatives else ""
-                            if transcript:
-                                socketio.emit("deepgram_streaming_result", {"transcript": transcript}, room=sid)
-
-                    def on_close(_) -> None:
-                        print("Connection closed")
-                        socketio.emit("deepgram_streaming_result", {"done": True}, room=sid)
-
-                    def on_error(error) -> None:
-                        print(f"Error: {error}")
-                        socketio.emit("deepgram_streaming_result", {"error": str(error)}, room=sid)
-
-                    connection.on(EventType.OPEN, on_open)
-                    connection.on(EventType.MESSAGE, on_message)
-                    connection.on(EventType.CLOSE, on_close)
-                    connection.on(EventType.ERROR, on_error)
-
-                    # Start listening in background thread
-                    listen_thread = threading.Thread(target=connection.start_listening, daemon=True)
-                    listen_thread.start()
-
-                    # Stream audio from URL
-                    response = requests.get(url, stream=True, timeout=60)
-                    if response.status_code == 200:
-                        for chunk in response.iter_content(chunk_size=4096):
-                            if stop_flag.is_set():
-                                break
-                            if chunk:
-                                from deepgram.extensions.types.sockets import ListenV1MediaMessage
-                                connection.send_media(ListenV1MediaMessage(data=chunk))
-
-                    # Finalize transcription
-                    from deepgram.extensions.types.sockets import ListenV1ControlMessage
-                    connection.send_control(ListenV1ControlMessage(type="Finalize"))
-
-            except Exception as e:
-                print(f"Streaming error: {e}")
-                socketio.emit("deepgram_streaming_result", {"error": str(e)}, room=sid)
-
-        thread = threading.Thread(target=ws_thread, daemon=True)
-        with self._lock:
-            self._sessions[sid] = {"thread": thread, "stop_flag": stop_flag}
-        thread.start()
-
-    def stop_streaming(self, sid: str) -> None:
-        with self._lock:
-            session = self._sessions.pop(sid, None)
-        if not session:
-            return
-        stop_flag = session.get("stop_flag")
-        if stop_flag:
-            stop_flag.set()
 
 
 deepgram_controller = DeepgramController()

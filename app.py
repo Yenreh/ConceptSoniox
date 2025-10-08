@@ -19,22 +19,6 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'dev-secret-key')
 socketio = SocketIO(app, cors_allowed_origins="*")
 
-# Deepgram streaming STT via WebSocket (Flask-SocketIO)
-@socketio.on('deepgram_streaming_stt')
-def handle_deepgram_streaming_stt(data):
-    sid = request.sid
-    url = data.get('url')
-    try:
-        deepgram_controller.start_streaming(sid, url, socketio)
-    except ValueError as e:
-        emit('deepgram_streaming_result', {'error': str(e)})
-    except Exception as e:
-        emit('deepgram_streaming_result', {'error': str(e)})
-
-@socketio.on('deepgram_streaming_stop')
-def handle_deepgram_streaming_stop():
-    deepgram_controller.stop_streaming(request.sid)
-
 @app.route('/')
 def index():
     """Página principal con interfaz de transcripción en vivo"""
@@ -133,7 +117,23 @@ def handle_audio_chunk(data):
         audio_data = base64.b64decode(audio_b64)
         audio_format = data.get('format', 'wav')
         model = data.get('model')
-        result = soniox_controller.transcribe_streaming_chunk(audio_data, audio_format=audio_format, model=model)
+        
+        # Check which service to use based on 'service' field
+        service = data.get('service', 'soniox')
+        
+        if service == 'deepgram':
+            language = data.get('language', 'es')
+            result = deepgram_controller.transcribe_microphone_chunk(
+                audio_data,
+                audio_format=audio_format,
+                language=language
+            )
+        else:
+            result = soniox_controller.transcribe_streaming_chunk(
+                audio_data,
+                audio_format=audio_format,
+                model=model
+            )
 
         if result.get('text'):
             payload = {
