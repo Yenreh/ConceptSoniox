@@ -3,3 +3,4 @@ flask-socketio
 python-dotenv
 soniox
 python-socketio[client]
+deepgram-sdk

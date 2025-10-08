@@ -70,6 +70,16 @@
                 <div class="deepgram-section">
                     <h2 class="deepgram-title">Deepgram AI Speech-to-Text</h2>
                     <div class="controls">
+                        <select id="dgLanguage" class="styled-input">
+                            <option value="es" selected>Español</option>
+                            <option value="en">English</option>
+                            <option value="pt">Português</option>
+                            <option value="fr">Français</option>
+                            <option value="de">Deutsch</option>
+                            <option value="it">Italiano</option>
+                        </select>
+                    </div>
+                    <div class="controls">
                         <input type="file" id="dgLocalFile" accept="audio/*" class="styled-input">
                         <button class="btn btn-start" onclick="deepgramLocalSTT()">Transcribir archivo local</button>
                     </div>
@@ -125,6 +135,7 @@
         async function deepgramLocalSTT() {
             const fileInput = document.getElementById('dgLocalFile');
             const resultDiv = document.getElementById('dgResult');
+            const language = document.getElementById('dgLanguage').value;
             resultDiv.textContent = 'Procesando...';
             if (!fileInput.files.length) {
                 resultDiv.textContent = 'Seleccione un archivo de audio.';
@@ -132,6 +143,7 @@
             }
             const formData = new FormData();
             formData.append('audio', fileInput.files[0]);
+            formData.append('language', language);
             const resp = await fetch('/deepgram/local-stt', { method: 'POST', body: formData });
             const data = await resp.json();
             if (data.error) {
@@ -145,6 +157,7 @@
         async function deepgramRemoteSTT() {
             const url = document.getElementById('dgRemoteUrl').value;
             const resultDiv = document.getElementById('dgResult');
+            const language = document.getElementById('dgLanguage').value;
             resultDiv.textContent = 'Procesando...';
             if (!url) {
                 resultDiv.textContent = 'Ingrese una URL de audio.';
@@ -153,7 +166,7 @@
             const resp = await fetch('/deepgram/remote-stt', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ url })
+                body: JSON.stringify({ url, language })
             });
             const data = await resp.json();
             if (data.error) {

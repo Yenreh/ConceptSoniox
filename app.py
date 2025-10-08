@@ -47,8 +47,10 @@ def deepgram_local_stt():
     file = request.files.get('audio')
     if not file:
         return jsonify({'error': 'No file uploaded'}), 400
+    # Get language from form data, default to Spanish
+    language = request.form.get('language', 'es')
     try:
-        result = deepgram_controller.transcribe_local_upload(file)
+        result = deepgram_controller.transcribe_local_upload(file, language=language)
         return jsonify(result)
     except ValueError as e:
         return jsonify({'error': str(e)}), 400
@@ -61,8 +63,10 @@ def deepgram_remote_stt():
     url = data.get('url') if data else None
     if not url:
         return jsonify({'error': 'No URL provided'}), 400
+    # Get language from request, default to Spanish
+    language = data.get('language', 'es') if data else 'es'
     try:
-        result = deepgram_controller.transcribe_remote_url(url)
+        result = deepgram_controller.transcribe_remote_url(url, language=language)
         return jsonify(result)
     except ValueError as e:
         return jsonify({'error': str(e)}), 400
