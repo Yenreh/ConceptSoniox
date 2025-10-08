@@ -1,3 +1,51 @@
+.styled-input,
+select.styled-input {
+	background: rgba(31, 41, 55, 0.5);
+	border: 1px solid rgba(75, 85, 99, 0.3);
+	color: #e5e7eb;
+	border-radius: 10px;
+	padding: 12px 16px;
+	font-size: 1em;
+	margin-right: 10px;
+	transition: border 0.3s, box-shadow 0.3s;
+	outline: none;
+}
+select.styled-input:focus,
+.styled-input:focus {
+	border-color: #6366f1;
+	box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+}
+.deepgram-title {
+	font-size: 2em;
+	font-weight: 700;
+	margin-bottom: 20px;
+	background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+	-webkit-background-clip: text;
+	-webkit-text-fill-color: transparent;
+	background-clip: text;
+	text-align: center;
+}
+
+.styled-input {
+	background: rgba(31, 41, 55, 0.5);
+	border: 1px solid rgba(75, 85, 99, 0.3);
+	color: #e5e7eb;
+	border-radius: 10px;
+	padding: 12px 16px;
+	font-size: 1em;
+	margin-right: 10px;
+	transition: border 0.3s, box-shadow 0.3s;
+	outline: none;
+}
+.styled-input:focus {
+	border-color: #6366f1;
+	box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+}
+.wide-input {
+	width: 60%;
+	min-width: 220px;
+	max-width: 500px;
+}
 * {
 	margin: 0;
 	padding: 0;
@@ -48,6 +96,35 @@ body {
 	border-radius: 20px;
 	padding: 40px;
 	box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+	margin-bottom: 40px;
+}
+
+.tab-bar {
+	display: flex;
+	justify-content: center;
+	gap: 10px;
+	margin-bottom: 30px;
+}
+.tab-btn {
+	background: rgba(75, 85, 99, 0.5);
+	color: #e5e7eb;
+	border: none;
+	border-radius: 10px 10px 0 0;
+	padding: 12px 32px;
+	font-size: 1.1em;
+	font-weight: 600;
+	cursor: pointer;
+	transition: background 0.3s, color 0.3s;
+}
+.tab-btn.active, .tab-btn:hover {
+	background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+	color: #fff;
+}
+.tab-content {
+	margin-top: 0;
+}
+.deepgram-section {
+	margin-top: 20px;
 }
 
 .controls {

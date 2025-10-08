@@ -5,12 +5,13 @@ Usa Soniox Speech-to-Text API con WebSockets
 """
 
 import os
+import base64
 from flask import Flask, render_template, request, jsonify
 from flask_socketio import SocketIO, emit
 from dotenv import load_dotenv
-from soniox.speech_service import SpeechClient
-from soniox.transcribe_file import transcribe_bytes_short
-import base64
+
+from controller_soniox import soniox_controller
+from controller_deepgram import deepgram_controller
 
 load_dotenv()
 
@@ -18,18 +19,72 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'dev-secret-key')
 socketio = SocketIO(app, cors_allowed_origins="*")
 
-# Cliente de Soniox
-API_KEY = os.getenv('SONIOX_API_KEY')
-
 @app.route('/')
 def index():
     """Página principal con interfaz de transcripción en vivo"""
     return render_template('index.html')
 
+# --- DEEPGRAM API ENDPOINTS ---
+
+@app.route('/deepgram/local-stt', methods=['POST'])
+def deepgram_local_stt():
+    file = request.files.get('audio')
+    if not file:
+        return jsonify({'error': 'No file uploaded'}), 400
+    # Get language from form data, default to Spanish
+    language = request.form.get('language', 'es')
+    try:
+        result = deepgram_controller.transcribe_local_upload(file, language=language)
+        return jsonify(result)
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 400
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/deepgram/remote-stt', methods=['POST'])
+def deepgram_remote_stt():
+    data = request.get_json()
+    url = data.get('url') if data else None
+    if not url:
+        return jsonify({'error': 'No URL provided'}), 400
+    # Get language from request, default to Spanish
+    language = data.get('language', 'es') if data else 'es'
+    try:
+        result = deepgram_controller.transcribe_remote_url(url, language=language)
+        return jsonify(result)
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 400
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/deepgram/tts', methods=['POST'])
+def deepgram_tts():
+    data = request.get_json()
+    if not data:
+        return jsonify({'error': 'No request data provided'}), 400
+    text = data.get('text')
+    model = data.get('model')
+    encoding = data.get('encoding')
+    sample_rate = data.get('sample_rate')
+    mip_opt_out = data.get('mip_opt_out', 'false')
+    try:
+        audio_b64 = deepgram_controller.synthesize_speech(
+            text=text,
+            model=model,
+            encoding=encoding,
+            sample_rate=sample_rate,
+            mip_opt_out=mip_opt_out,
+        )
+        return jsonify({'audio': audio_b64})
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 400
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 @app.route('/health')
 def health():
     """Endpoint de salud"""
-    return jsonify({'status': 'ok', 'api_configured': bool(API_KEY)})
+    return jsonify({'status': 'ok'})
 
 @socketio.on('connect')
 def handle_connect():
@@ -56,28 +111,40 @@ def handle_audio_chunk(data):
     """
     try:
         # Decodificar el audio base64
-        audio_data = base64.b64decode(data['audio'])
+        audio_b64 = data.get('audio')
+        if not audio_b64:
+            raise ValueError('No audio payload received')
+        audio_data = base64.b64decode(audio_b64)
+        audio_format = data.get('format', 'wav')
+        model = data.get('model')
         
-        # Transcribir el chunk de audio (ya viene en WAV desde el navegador)
-        with SpeechClient(api_key=API_KEY) as client:
-            result = transcribe_bytes_short(
+        # Check which service to use based on 'service' field
+        service = data.get('service', 'soniox')
+        
+        if service == 'deepgram':
+            language = data.get('language', 'es')
+            result = deepgram_controller.transcribe_microphone_chunk(
                 audio_data,
-                client,
-                model="es_v2",  # Español
-                audio_format="wav",
+                audio_format=audio_format,
+                language=language
             )
-            
-            # Extraer el texto
-            if result.words:
-                transcript = " ".join([word.text for word in result.words])
-                
-                # Enviar transcripción al cliente
-                emit('transcription', {
-                    'text': transcript,
-                    'is_final': True,
-                    'timestamp': data.get('timestamp', 0)
-                })
-    
+        else:
+            result = soniox_controller.transcribe_streaming_chunk(
+                audio_data,
+                audio_format=audio_format,
+                model=model
+            )
+
+        if result.get('text'):
+            payload = {
+                'text': result['text'],
+                'is_final': True,
+                'timestamp': data.get('timestamp', 0),
+                'model': result.get('model'),
+            }
+            if result.get('confidence') is not None:
+                payload['confidence'] = result['confidence']
+            emit('transcription', payload)
     except Exception as e:
         print(f"Error al transcribir: {e}")
         emit('error', {'message': str(e)})
@@ -95,58 +162,32 @@ def handle_transcribe_file(data):
     """
     try:
         # Decodificar el audio base64
-        audio_data = base64.b64decode(data['audio'])
+        audio_b64 = data.get('audio')
+        if not audio_b64:
+            raise ValueError('No audio payload received')
+        audio_data = base64.b64decode(audio_b64)
         
         # Detectar formato del archivo
         file_format = data.get('format', 'mp3')
-        
-        # Formatos soportados por Soniox
-        supported_formats = ['aac', 'aiff', 'amr', 'asf', 'flac', 'mp3', 'ogg', 'wav']
-        
-        if file_format not in supported_formats:
-            file_format = 'mp3'  # Default
-        
-        # Transcribir
-        with SpeechClient(api_key=API_KEY) as client:
-            result = transcribe_bytes_short(
-                audio_data,
-                client,
-                model="es_v2",
-                audio_format=file_format,
-            )
-            
-            # Extraer texto y palabras con timestamps
-            transcript = " ".join([word.text for word in result.words])
-            
-            words_with_timestamps = [
-                {
-                    'text': word.text,
-                    'start_ms': word.start_ms,
-                    'duration_ms': word.duration_ms
-                }
-                for word in result.words
-            ]
-            
-            emit('file_transcription', {
-                'text': transcript,
-                'words': words_with_timestamps
-            })
-    
+        model = data.get('model')
+        result = soniox_controller.transcribe_file_audio(audio_data, file_format=file_format, model=model)
+
+        emit('file_transcription', {
+            'text': result['text'],
+            'words': result['words'],
+            'confidence': result.get('confidence'),
+            'format': result.get('format'),
+            'model': result.get('model'),
+        })
     except Exception as e:
         print(f"Error al transcribir archivo: {e}")
         emit('error', {'message': str(e)})
 
 if __name__ == '__main__':
-    if not API_KEY:
-        print("ERROR: No se ha configurado SONIOX_API_KEY")
-        print("Por favor, configura tu API key en el archivo .env")
-        exit(1)
-    
     print("=" * 50)
     print("Servidor de Transcripción en Vivo")
     print("=" * 50)
     print(f"URL: http://localhost:5000")
-    print(f"Modelo: es_v2 (Español)")
     print("=" * 50)
     
     socketio.run(app, host='0.0.0.0', port=5000, debug=True)

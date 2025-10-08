@@ -1,189 +1,58 @@
-# Soniox Speech-to-Text - Prueba de Concepto
+# Concept Proof · Soniox + Deepgram
 
-Aplicación web completa para transcripción de audio a texto en español usando Soniox Speech-to-Text API (modelo `es_v2`).
+Prueba de concepto que combina transcripción y síntesis de voz usando Soniox y Deepgram sobre una app Flask con WebSockets.
 
-## Características
+## Qué incluye
 
-### Aplicación Web (Flask)
-- Grabación en vivo desde el micrófono con transcripción en tiempo real
-- Subir archivos de audio con drag & drop
-- WebSockets para comunicación en tiempo real
-- Estadísticas en vivo (palabras, caracteres, duración)
-- Interfaz moderna y responsiva
+**Interfaz web**
+  - Pestaña Soniox: transcripción en vivo desde el navegador, subida de archivos y métricas de palabras/caracteres.
+  - Pestaña Deepgram: transcripción en vivo multilenguaje, carga de archivos locales, URLs remotas y texto a voz.
 
-### Script de Línea de Comandos
-- Transcripción de archivos de audio
-- Timestamps precisos por palabra
-- Exportación a TXT
-- Optimizado para español (modelo es_v2)
+## Requisitos rápidos
 
-## Requisitos
+- Python 3.10 o superior
+- Cuenta en Soniox (clave `SONIOX_API_KEY`)
+- Cuenta en Deepgram (clave `DEEPGRAM_API_KEY`)
+- Opcional: `SECRET_KEY` para sesiones Flask y `SONIOX_MODEL` para cambiar el modelo por defecto
 
-- Python 3.8 o superior
-- Cuenta en Soniox (https://console.soniox.com) - Plan gratuito disponible
+## Configuración
 
-## Instalación
+1. Clona el repositorio y entra en la carpeta del proyecto.
+2. (Opcional) Crea y activa un entorno virtual.
+3. Instala dependencias:
 
-### 1. Configuración Inicial
+    ```bash
+    pip install -r requirements.txt
+    ```
 
-```bash
-# Clonar el repositorio
-git clone https://github.com/Yenreh/ConceptSoniox.git
-cd ConceptSoniox
+4. Crea un archivo `.env` en la raíz con tus claves:
 
-# Copiar archivo de configuración
-cp .env.example .env
-```
+    ```bash
+    SONIOX_API_KEY=tu_clave_soniox
+    DEEPGRAM_API_KEY=tu_clave_deepgram
+    SECRET_KEY=clave_para_flask
+    # SONIOX_MODEL=es_v2  (opcional)
+    ```
 
-### 2. Obtener API Key (Gratis)
-
-1. Ve a https://console.soniox.com/signup
-2. Crea una cuenta gratuita
-3. En "My First Project" → "API Keys"
-4. Genera una nueva API Key
-5. Copia la key en tu archivo `.env`:
+## Ejecutar la aplicación web
 
 ```bash
-SONIOX_API_KEY=tu_api_key_aqui
-SECRET_KEY=tu_secret_key_para_flask  # Para Flask
-```
-
-### 3. Instalar Dependencias
-
-```bash
-# Instalar todas las dependencias (incluye Flask)
-pip install -r requirements.txt
-```
-
-## Uso
-
-### Opción 1: Aplicación Web (Recomendado)
-
-```bash
-# Iniciar servidor Flask
 python app.py
 ```
 
-Abre tu navegador en **http://localhost:5000**
+Abre http://localhost:5000 y alterna entre las pestañas Soniox y Deepgram para probar:
 
-#### Funcionalidades Web
+- Transcripción en vivo desde el micrófono con indicadores de estado y estadísticas.
+- Subida drag & drop y procesamiento de archivos completos.
+- Deepgram TTS con descarga directa del audio generado.
 
-**Grabación en Vivo:**
-1. Clic en "Iniciar Grabación"
-2. Permitir acceso al micrófono
-3. Hablar en español
-4. Ver transcripción en tiempo real
-5. Clic en "Detener" al terminar
 
-**Subir Archivo:**
-1. Arrastra un archivo de audio al área de carga
-2. O haz clic para seleccionar archivo
-3. La transcripción se mostrará automáticamente
+## Formatos compatibles
 
-### Opción 2: Script de Línea de Comandos
+MP3, WAV, OGG, FLAC, AAC, WEBM, AMR, ASF, AIFF (normalizados automáticamente cuando es necesario).
 
-```bash
-# Transcribir un archivo de audio
-python speech_to_text.py
-```
+## Problemas habituales
 
-Coloca tu archivo de audio como `sample_audio.mp3` o modifica el script para usar otro archivo. El resultado se guardará en `transcription.txt`.
-
-## Formatos de Audio Soportados
-
-- MP3
-- WAV
-- OGG
-- FLAC
-- AAC
-- WEBM
-- AMR
-- ASF
-- AIFF
-
-## Tecnologías
-
-### Backend
-- Flask + Flask-SocketIO
-- Soniox Python SDK (gRPC)
-- Python-dotenv
-
-### Frontend
-- HTML5 + CSS3
-- JavaScript (Web Audio API)
-- Socket.IO client
-- Conversión WAV nativa en navegador
-
-### API
-- Soniox Speech-to-Text (modelo es_v2)
-- Protocolo gRPC
-
-## Arquitectura
-
-```
-┌─────────────────┐
-│   Navegador     │
-│  (Micrófono)    │
-│   Web Audio     │
-│   API → WAV     │
-└────────┬────────┘
-         │ WebSocket
-         ↓
-┌─────────────────┐
-│  Servidor Flask │
-│   Socket.IO     │
-└────────┬────────┘
-         │ gRPC
-         ↓
-┌─────────────────┐
-│   Soniox API    │
-│  (modelo es_v2) │
-└─────────────────┘
-```
-
-## Estructura del Proyecto
-
-```
-ConceptSoniox/
-├── app.py                    # Servidor Flask principal
-├── speech_to_text.py         # Script CLI
-├── templates/
-│   └── index.html           # Interfaz web
-├── requirements.txt         # Dependencias
-├── .env.example            # Template de configuración
-├── .gitignore              # Archivos ignorados
-└── README.md               # Este archivo
-```
-
-## Troubleshooting
-
-### No se puede acceder al micrófono
-- Permitir acceso al micrófono en el navegador
-- En producción, requiere HTTPS (no HTTP)
-- Verificar permisos del sistema operativo
-
-### La transcripción no aparece
-- Verificar que `SONIOX_API_KEY` sea correcta en `.env`
-- Revisar la consola del navegador (F12) para errores
-- Verificar los logs del servidor Flask en la terminal
-
-### Audio sin transcribir
-- Verificar que el audio esté en español
-- Asegurar buena calidad de audio (sin ruido)
-- Comprobar formato de audio soportado
-
-## Documentación Oficial
-
-- **API Legacy (esta implementación)**: https://soniox.com/docs/speech-to-text-legacy/api-frameworks/grpc
-- **Nueva API (60+ idiomas)**: https://soniox.com/docs/stt/get-started
-- **Ejemplos Python**: https://github.com/soniox/soniox_examples
-- **Discord**: https://discord.gg/rWfnk9uM5j
-
-## Notas
-
-- Esta implementación usa la **API Legacy** con modelo `es_v2` (español)
-- Para soporte multilingüe (60+ idiomas), considera migrar a la nueva API
-- Los archivos de audio están excluidos del control de versiones
-- El archivo `.env` está excluido por seguridad
-- Plan gratuito disponible para pruebas
-- Para producción, revisar límites en documentación oficial
+- **Sin audio o micrófono**: confirma permisos del navegador y que usas HTTPS en producción.
+- **Errores de API**: revisa las claves en `.env` y que la cuenta tenga saldo/cuota.
+- **Transcripción vacía**: verifica idioma, calidad del audio y formatos soportados.

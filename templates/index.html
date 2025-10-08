@@ -16,56 +16,409 @@
         </div>
 
         <div class="main-card">
-            <div id="statusBar" class="status connected">
-                <span id="statusText">Conectado al servidor</span>
+            <div class="tab-bar">
+                <button class="tab-btn active" onclick="showTab('soniox')">Soniox STT</button>
+                <button class="tab-btn" onclick="showTab('deepgram')">Deepgram AI</button>
             </div>
 
-            <div id="errorBar" class="error" style="display: none;"></div>
+            <!-- SONIOX TAB (default) -->
+            <div id="tab-soniox" class="tab-content" style="display:block;">
 
-            <div class="controls">
-                <button id="startBtn" class="btn btn-start" onclick="startRecording()">
-                    🎙️ Iniciar Grabación
-                </button>
-                <button id="stopBtn" class="btn btn-stop" onclick="stopRecording()" disabled>
-                    ⏹️ Detener
-                </button>
-                <button class="btn btn-clear" onclick="clearTranscription()">
-                    🗑️ Limpiar
-                </button>
-            </div>
-
-            <div class="upload-area" id="uploadArea" onclick="document.getElementById('fileInput').click()">
-                <h3>📁 O arrastra un archivo de audio aquí</h3>
-                <p>Soporta: MP3, WAV, OGG, WEBM, FLAC</p>
-                <input type="file" id="fileInput" accept="audio/*" onchange="handleFileUpload(this.files[0])">
-            </div>
-
-            <div id="loadingBar" class="loading">
-                <div class="spinner"></div>
-                <p>Transcribiendo...</p>
-            </div>
-
-            <div id="transcription" class="transcription-box"></div>
-
-            <div class="stats">
-                <div class="stat-card">
-                    <h3 id="wordCount">0</h3>
-                    <p>Palabras</p>
+                <div id="statusBar" class="status connected">
+                    <span id="statusText">Conectado al servidor</span>
                 </div>
-                <div class="stat-card">
-                    <h3 id="charCount">0</h3>
-                    <p>Caracteres</p>
+                <div id="errorBar" class="error" style="display: none;"></div>
+                <div class="controls">
+                    <button id="startBtn" class="btn btn-start" onclick="startRecording()">
+                        🎙️ Iniciar Grabación
+                    </button>
+                    <button id="stopBtn" class="btn btn-stop" onclick="stopRecording()" disabled>
+                        ⏹️ Detener
+                    </button>
+                    <button class="btn btn-clear" onclick="clearTranscription()">
+                        🗑️ Limpiar
+                    </button>
                 </div>
-                <div class="stat-card">
-                    <h3 id="duration">0s</h3>
-                    <p>Duración</p>
+                <div class="upload-area" id="uploadArea" onclick="document.getElementById('fileInput').click()">
+                    <h3>📁 O arrastra un archivo de audio aquí</h3>
+                    <p>Soporta: MP3, WAV, OGG, WEBM, FLAC</p>
+                    <input type="file" id="fileInput" accept="audio/*" onchange="handleFileUpload(this.files[0])">
+                </div>
+                <div id="loadingBar" class="loading">
+                    <div class="spinner"></div>
+                    <p>Transcribiendo...</p>
+                </div>
+                <div id="transcription" class="transcription-box"></div>
+                <div class="stats">
+                    <div class="stat-card">
+                        <h3 id="wordCount">0</h3>
+                        <p>Palabras</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3 id="charCount">0</h3>
+                        <p>Caracteres</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3 id="duration">0s</h3>
+                        <p>Duración</p>
+                    </div>
                 </div>
             </div>
-        </div>
-    </div>
+
+            <!-- DEEPGRAM TAB -->
+            <div id="tab-deepgram" class="tab-content" style="display:none;">
+                <div class="deepgram-section">
+                    <h2 class="deepgram-title">Deepgram AI Speech-to-Text</h2>
+                    
+                    <!-- Microphone Recording Section -->
+                    <div class="controls">
+                        <button id="dgStartBtn" class="btn btn-start" onclick="startDeepgramRecording()">
+                            🎙️ Iniciar Grabación
+                        </button>
+                        <button id="dgStopBtn" class="btn btn-stop" onclick="stopDeepgramRecording()" disabled>
+                            ⏹️ Detener
+                        </button>
+                        <button class="btn btn-clear" onclick="clearDeepgramTranscription()">
+                            🗑️ Limpiar
+                        </button>
+                    </div>
+                    
+                    <!-- Language Selector -->
+                    <div class="controls">
+                        <select id="dgLanguage" class="styled-input">
+                            <option value="es" selected>Español</option>
+                            <option value="en">English</option>
+                            <option value="pt">Português</option>
+                            <option value="fr">Français</option>
+                            <option value="de">Deutsch</option>
+                            <option value="it">Italiano</option>
+                        </select>
+                    </div>
+                    
+                    <!-- File Upload Section -->
+                    <div class="controls">
+                        <input type="file" id="dgLocalFile" accept="audio/*" class="styled-input">
+                        <button class="btn btn-start" onclick="deepgramLocalSTT()">📁 Transcribir archivo local</button>
+                    </div>
+                    
+                    <!-- Remote URL Section -->
+                    <div class="controls">
+                        <input type="text" id="dgRemoteUrl" placeholder="URL de audio remoto" class="styled-input wide-input">
+                        <button class="btn btn-start" onclick="deepgramRemoteSTT()">🌐 Transcribir URL remota</button>
+                    </div>
+
+                    <!-- Text-to-Speech Section -->
+                    <div class="controls">
+                        <textarea id="dgTtsText" rows="2" placeholder="Texto para sintetizar" class="styled-input wide-input"></textarea>
+                        <select id="dgTtsModel" class="styled-input">
+                            <option value="aura-asteria-en">aura-asteria-en</option>
+                            <option value="aura-orion-en">aura-orion-en</option>
+                            <option value="aura-2-celeste-es">aura-2-celeste-es</option>
+                            <option value="aura-2-javier-es">aura-2-javier-es</option>
+                        </select>
+                        <select id="dgTtsEncoding" class="styled-input">
+                            <option value="linear16">linear16</option>
+                            <option value="mulaw">mulaw</option>
+                            <option value="alaw">alaw</option>
+                        </select>
+                        <select id="dgTtsSampleRate" class="styled-input">
+                            <option value="8000">8000</option>
+                            <option value="16000">16000</option>
+                            <option value="24000" selected>24000</option>
+                            <option value="44100">44100</option>
+                            <option value="48000">48000</option>
+                        </select>
+                        <select id="dgTtsMipOptOut" class="styled-input">
+                            <option value="false">Mejora de modelo: No</option>
+                            <option value="true">Mejora de modelo: Sí</option>
+                        </select>
+                        <button class="btn btn-start" onclick="deepgramTTS()">🔊 Texto a voz</button>
+                    </div>
+                    
+                    <!-- Results -->
+                    <div id="dgResult" class="transcription-box"></div>
+                    <audio id="dgAudio" controls style="width:100%;display:none;"></audio>
+                    
+                    <!-- Stats -->
+                    <div class="stats">
+                        <div class="stat-card">
+                            <h3 id="dgWordCount">0</h3>
+                            <p>Palabras</p>
+                        </div>
+                        <div class="stat-card">
+                            <h3 id="dgCharCount">0</h3>
+                            <p>Caracteres</p>
+                        </div>
+                        <div class="stat-card">
+                            <h3 id="dgDuration">0s</h3>
+                            <p>Duración</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
     <script>
-        const socket = io();
+        // Tab switching logic
+        function showTab(tab) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(tabDiv => tabDiv.style.display = 'none');
+            document.querySelector('.tab-btn[onclick*="' + tab + '"]').classList.add('active');
+            document.getElementById('tab-' + tab).style.display = 'block';
+        }
+
+    const socket = io();
+    
+    // --- Deepgram Variables ---
+    let dgMediaRecorder;
+    let dgAudioChunks = [];
+    let dgStartTime;
+    let dgIsRecording = false;
+    let dgAudioContext;
+    let dgAudioStream;
+    
+    // --- Deepgram Microphone Recording ---
+    async function startDeepgramRecording() {
+        try {
+            dgAudioStream = await navigator.mediaDevices.getUserMedia({ 
+                audio: {
+                    channelCount: 1,
+                    sampleRate: 16000
+                }
+            });
+            
+            dgAudioContext = new (window.AudioContext || window.webkitAudioContext)({
+                sampleRate: 16000
+            });
+            
+            const source = dgAudioContext.createMediaStreamSource(dgAudioStream);
+            const processor = dgAudioContext.createScriptProcessor(4096, 1, 1);
+            
+            let audioBuffer = [];
+            const CHUNK_DURATION = 2000;
+            const SAMPLES_PER_CHUNK = 16000 * 2;
+            
+            processor.onaudioprocess = (e) => {
+                if (!dgIsRecording) return;
+                
+                const inputData = e.inputBuffer.getChannelData(0);
+                audioBuffer.push(...inputData);
+                
+                if (audioBuffer.length >= SAMPLES_PER_CHUNK) {
+                    const chunk = audioBuffer.slice(0, SAMPLES_PER_CHUNK);
+                    audioBuffer = audioBuffer.slice(SAMPLES_PER_CHUNK);
+                    
+                    const wavBlob = encodeWAV(chunk, 16000);
+                    const reader = new FileReader();
+                    reader.onload = () => {
+                        const base64Audio = reader.result.split(',')[1];
+                        const language = document.getElementById('dgLanguage').value;
+                        socket.emit('audio_chunk', {
+                            audio: base64Audio,
+                            timestamp: Date.now() - dgStartTime,
+                            service: 'deepgram',
+                            language: language
+                        });
+                    };
+                    reader.readAsDataURL(wavBlob);
+                }
+            };
+            
+            source.connect(processor);
+            processor.connect(dgAudioContext.destination);
+
+            dgAudioChunks = [];
+            dgStartTime = Date.now();
+
+            dgIsRecording = true;
+            document.getElementById('dgStartBtn').disabled = true;
+            document.getElementById('dgStopBtn').disabled = false;
+            
+            updateDeepgramDuration();
+
+        } catch (err) {
+            showError('Error al acceder al micrófono (Deepgram): ' + err.message);
+        }
+    }
+
+    function stopDeepgramRecording() {
+        if (dgIsRecording) {
+            dgIsRecording = false;
+            
+            if (dgAudioStream) {
+                dgAudioStream.getTracks().forEach(track => track.stop());
+            }
+            if (dgAudioContext) {
+                dgAudioContext.close();
+            }
+            
+            document.getElementById('dgStartBtn').disabled = false;
+            document.getElementById('dgStopBtn').disabled = true;
+        }
+    }
+    
+    function clearDeepgramTranscription() {
+        document.getElementById('dgResult').innerHTML = '';
+        updateDeepgramStats();
+    }
+    
+    function updateDeepgramStats() {
+        const text = document.getElementById('dgResult').textContent.trim();
+        const words = text ? text.split(/\s+/).length : 0;
+        const chars = text.length;
+        
+        document.getElementById('dgWordCount').textContent = words;
+        document.getElementById('dgCharCount').textContent = chars;
+    }
+    
+    function updateDeepgramDuration() {
+        if (dgIsRecording) {
+            const elapsed = Math.floor((Date.now() - dgStartTime) / 1000);
+            document.getElementById('dgDuration').textContent = elapsed + 's';
+            setTimeout(updateDeepgramDuration, 1000);
+        }
+    }
+    
+    function addDeepgramTranscription(text) {
+        const resultDiv = document.getElementById('dgResult');
+        const words = text.split(' ');
+        words.forEach(word => {
+            const span = document.createElement('span');
+            span.className = 'word new';
+            span.textContent = word + ' ';
+            
+            if (word.trim() === '') return;
+            resultDiv.appendChild(span);
+            
+            setTimeout(() => {
+                span.classList.remove('new');
+            }, 500);
+        });
+        
+        resultDiv.scrollTop = resultDiv.scrollHeight;
+        updateDeepgramStats();
+    }
+    
+    // --- Deepgram File & URL handlers ---
+    async function deepgramLocalSTT() {
+        const fileInput = document.getElementById('dgLocalFile');
+        const resultDiv = document.getElementById('dgResult');
+        const language = document.getElementById('dgLanguage').value;
+        resultDiv.textContent = 'Procesando...';
+        if (!fileInput.files.length) {
+            resultDiv.textContent = 'Seleccione un archivo de audio.';
+            return;
+        }
+        const formData = new FormData();
+        formData.append('audio', fileInput.files[0]);
+        formData.append('language', language);
+        const resp = await fetch('/deepgram/local-stt', { method: 'POST', body: formData });
+        const data = await resp.json();
+        if (data.error) {
+            resultDiv.textContent = 'Error: ' + data.error;
+        } else {
+            const alt = data.results?.channels?.[0]?.alternatives?.[0];
+            resultDiv.textContent = alt?.transcript || JSON.stringify(data);
+            updateDeepgramStats();
+        }
+    }
+
+    async function deepgramRemoteSTT() {
+        const url = document.getElementById('dgRemoteUrl').value;
+        const resultDiv = document.getElementById('dgResult');
+        const language = document.getElementById('dgLanguage').value;
+        resultDiv.textContent = 'Procesando...';
+        if (!url) {
+            resultDiv.textContent = 'Ingrese una URL de audio.';
+            return;
+        }
+        const resp = await fetch('/deepgram/remote-stt', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ url, language })
+        });
+        const data = await resp.json();
+        if (data.error) {
+            resultDiv.textContent = 'Error: ' + data.error;
+        } else {
+            const alt = data.results?.channels?.[0]?.alternatives?.[0];
+            resultDiv.textContent = alt?.transcript || JSON.stringify(data);
+            updateDeepgramStats();
+        }
+    }
+    
+    // Listen for transcription results from Deepgram microphone
+    socket.on('transcription', (data) => {
+        // Check if we're in Deepgram tab and recording
+        const activeTab = document.querySelector('.tab-btn.active').textContent;
+        if (activeTab.includes('Deepgram') && dgIsRecording) {
+            addDeepgramTranscription(data.text);
+        } else {
+            // For Soniox tab
+            addTranscription(data.text);
+            updateStats();
+        }
+    });
+        
+    // Polyfill for EventSource with POST support
+    // https://github.com/amvtek/EventSource
+    function EventSourcePolyfill(url, options) {
+            options = options || {};
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', url, true);
+            if (options.headers) {
+                for (const k in options.headers) xhr.setRequestHeader(k, options.headers[k]);
+            }
+            let listeners = {};
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === 3 || xhr.readyState === 4) {
+                    const lines = xhr.responseText.split(/\n\n/);
+                    for (let i = 0; i < lines.length; i++) {
+                        const line = lines[i].trim();
+                        if (line.startsWith('data:')) {
+                            const data = line.replace('data:', '').trim();
+                            if (listeners['message']) listeners['message']({ data });
+                        }
+                    }
+                }
+            };
+            xhr.onerror = function() { if (listeners['error']) listeners['error'](); };
+            xhr.send(options.payload || null);
+            return {
+                onmessage: function(cb) { listeners['message'] = cb; },
+                onerror: function(cb) { listeners['error'] = cb; },
+                close: function() { xhr.abort(); }
+            };
+        }
+
+        async function deepgramTTS() {
+            const text = document.getElementById('dgTtsText').value;
+            const model = document.getElementById('dgTtsModel').value;
+            const encoding = document.getElementById('dgTtsEncoding').value;
+            const sample_rate = document.getElementById('dgTtsSampleRate').value;
+            const mip_opt_out = document.getElementById('dgTtsMipOptOut').value;
+            const resultDiv = document.getElementById('dgResult');
+            const audioEl = document.getElementById('dgAudio');
+            resultDiv.textContent = 'Procesando...';
+            audioEl.style.display = 'none';
+            if (!text) {
+                resultDiv.textContent = 'Ingrese texto para sintetizar.';
+                return;
+            }
+            const resp = await fetch('/deepgram/tts', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ text, model, encoding, sample_rate, mip_opt_out })
+            });
+            const data = await resp.json();
+            if (data.error) {
+                resultDiv.textContent = 'Error: ' + data.error;
+            } else if (data.audio) {
+                const audioSrc = 'data:audio/wav;base64,' + data.audio;
+                audioEl.src = audioSrc;
+                audioEl.style.display = 'block';
+                resultDiv.textContent = 'Audio generado:';
+            }
+        }
         let mediaRecorder;
         let audioChunks = [];
         let startTime;
@@ -96,11 +449,6 @@
 
         socket.on('status', (data) => {
             updateStatus(data.message, data.status);
-        });
-
-        socket.on('transcription', (data) => {
-            addTranscription(data.text);
-            updateStats();
         });
 
         socket.on('file_transcription', (data) => {
@@ -154,7 +502,8 @@
                             const base64Audio = reader.result.split(',')[1];
                             socket.emit('audio_chunk', {
                                 audio: base64Audio,
-                                timestamp: Date.now() - startTime
+                                timestamp: Date.now() - startTime,
+                                service: 'soniox'
                             });
                         };
                         reader.readAsDataURL(wavBlob);
